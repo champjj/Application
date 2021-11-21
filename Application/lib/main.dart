@@ -2,13 +2,13 @@ import 'package:application/Menupage.dart';
 import 'package:application/Register.dart';
 import 'package:application/utility/alertDialogmsg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:firebase_core/firebase_core.dart';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-void main() => {runApp(const Myapp())};
+void main() async {
+  await WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp().then((res) => runApp(const Myapp()));
+}
 
 class Myapp extends StatelessWidget {
   const Myapp({Key key}) : super(key: key);
@@ -18,12 +18,14 @@ class Myapp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Helvetica'),
-      home: Homepage(),
+      home: const Homepage(),
     );
   }
 }
 
 class Homepage extends StatefulWidget {
+  const Homepage({Key key}) : super(key: key);
+
   @override
   _HomepageState createState() => _HomepageState();
 }
@@ -33,41 +35,29 @@ class _HomepageState extends State<Homepage> {
 
   final Future<FirebaseApp> firebase = Firebase.initializeApp();
 
-  String textId = '', textPassword = '', textShopname = '', textPhone = '';
-  bool invalidID = false, invalidPassword = false;
-  //////////////////////  Login user  //////////////////////////////////////
-  onCheckUserLogin(String idUser, String password) async {
-    final UserData = FirebaseFirestore.instance.collection('user').doc(idUser);
-    await UserData.get().then((value) => {
-          setState(() {
-            invalidID = false;
-            invalidPassword = false;
-            if (textId != value['idUser']) {
-              invalidID = true;
-              print('id');
-            }
-            if (textPassword != value['password']) {
-              invalidPassword = true;
-              print('password');
-            }
-            if ((textPassword == value['password']) &&
-                (textId == value['idUser'])) {
-              if (value.exists) {
-                textId = value['idUser'];
-                textPassword = value['password'];
-                textShopname = value['shopname'];
-                textPhone = value['phone'];
+  String textId, textPassword, textShopname, textPhone;
 
-                print(
-                    'login Success $textId $textPassword $textShopname $textPhone');
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Menupage()));
-              } else {
-                print('value is not exists');
-              }
-            }
-          })
-        });
+  CollectionReference database = FirebaseFirestore.instance.collection('users');
+  //////////////////////  Login user  //////////////////////////////////////
+
+  Future<void> onCheckDuplicateUser(String idUser, String password) async {
+    await database
+        .where('idUser', isEqualTo: idUser)
+        .where('password', isEqualTo: password)
+        .get()
+        .then((value) => {
+              print(value.size),
+              if (value.size == 0)
+                {
+                  dialogmsgok(
+                      context, 'Sign in fail', 'ID or Password is Wrong')
+                }
+              else if (value.size == 1)
+                {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Menupage())),
+                }
+            });
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -98,11 +88,11 @@ class _HomepageState extends State<Homepage> {
                         height: 140,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(
+                          children: const [
+                            SizedBox(
                               width: 40,
                             ),
-                            const Text(
+                            Text(
                               'Sign in',
                               style: TextStyle(
                                   fontFamily: 'Helvetica',
@@ -126,8 +116,6 @@ class _HomepageState extends State<Homepage> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Enter ID';
-                              } else if (invalidID == true) {
-                                return 'Wrong ID';
                               }
                               return null;
                             },
@@ -151,8 +139,6 @@ class _HomepageState extends State<Homepage> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Enter Password';
-                              } else if (invalidPassword == true) {
-                                return 'Wrong Password';
                               }
                               return null;
                             },
@@ -177,10 +163,8 @@ class _HomepageState extends State<Homepage> {
                         padding: const EdgeInsets.only(left: 90, right: 90),
                         child: GestureDetector(
                           onTap: () {
-                            if (!_formkey.currentState.validate()) {
-                              return;
-                            } else {
-                              onCheckUserLogin(textId, textPassword);
+                            if (_formkey.currentState.validate()) {
+                              onCheckDuplicateUser(textId, textPassword);
                             }
                           },
                           child: Container(

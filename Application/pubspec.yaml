@@ -30,21 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-   # firebase_core: ^0.4.4+3
-  # firebase_auth: ^0.16.0
-  # cloud_firestore: ^0.13.5
-  # intl: ^0.16.1
-  # # cloud_firestore: ^1.0.3
-
-  # firebase_analytics: ^5.0.2
-  # image_picker: ^0.6.7+14
-  # firebase_storage: ^3.1.6
-  # permission_handler: ^5.0.1+1
-  # uuid: ^2.0.4
-  # provider: ^4.0.5
   http: ^0.13.4
   firebase_core: ^1.10.0
-  firebase_auth: ^3.2.0 
+
   cloud_firestore: ^3.1.0
   intl: ^0.17.0
 
@@ -63,6 +51,7 @@ dependencies:
   cupertino_icons: ^1.0.4
   # floating_action_bubble: ^1.0.9
   floating_action_bubble:
+  firebase_auth: ^3.2.0
 
 dev_dependencies:
   flutter_test:

@@ -266,7 +266,7 @@ class _RegisterpageState extends State<Registerpage> {
               ),
             );
           }
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),
